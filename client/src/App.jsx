@@ -133,7 +133,7 @@ function App() {
           </section>
         )}
 
-        {mode === 'presentation' && (
+        {mode === 'presentation' && uiState !== 'feedback' && (
           <section className="topic-section">
             <label className="topic-label" htmlFor="topic-input">
               What are you presenting about?
