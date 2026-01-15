@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Markdown from 'react-markdown'
 import { getRandomQuestion } from './questions'
 import { useRecorder } from './useRecorder'
 
@@ -243,8 +244,9 @@ function App() {
                 [&_p]:m-0 [&_p]:mb-sm
                 [&_strong]:text-text-primary [&_strong]:font-medium
                 [&_em]:italic [&_em]:text-text-secondary"
-              dangerouslySetInnerHTML={{ __html: formatMarkdown(feedback) }}
-            />
+            >
+              <Markdown>{feedback}</Markdown>
+            </div>
 
             {/* Feedback Actions */}
             <div className="flex gap-sm mt-xl pt-lg border-t border-bg-elevated">
@@ -297,28 +299,6 @@ function App() {
       </footer>
     </div>
   )
-}
-
-// Simple markdown formatter (handles basics for feedback display)
-function formatMarkdown(text) {
-  if (!text) return ''
-
-  return text
-    // Headers
-    .replace(/^### (.+)$/gm, '<h4>$1</h4>')
-    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^# (.+)$/gm, '<h2>$1</h2>')
-    // Bold
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // Italic
-    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
-    .replace(/_(.+?)_/g, '<em>$1</em>')
-    // Line breaks
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>')
-    // Wrap in paragraph
-    .replace(/^/, '<p>')
-    .replace(/$/, '</p>')
 }
 
 export default App
