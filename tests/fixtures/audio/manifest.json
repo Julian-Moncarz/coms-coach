@@ -1,0 +1,28 @@
+{
+  "samples": [
+    {
+      "file": "anti-patterns/1-rambler.m4a",
+      "prompt": "What's the best way to learn a new programming language?"
+    },
+    {
+      "file": "anti-patterns/2-hedger.m4a",
+      "prompt": "Should we switch our backend to Rust?"
+    },
+    {
+      "file": "anti-patterns/3-filler.m4a",
+      "prompt": "How does your product handle user authentication?"
+    },
+    {
+      "file": "anti-patterns/4-jargon.m4a",
+      "prompt": "Can you explain how your system works?"
+    },
+    {
+      "file": "anti-patterns/5-question-dodger.m4a",
+      "prompt": "Why did last quarter's revenue decline by 15%?"
+    },
+    {
+      "file": "control/control.m4a",
+      "prompt": "Why should we invest in automated testing?"
+    }
+  ]
+}
