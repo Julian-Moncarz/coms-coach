@@ -138,14 +138,14 @@ function App() {
             <label className="topic-label" htmlFor="topic-input">
               What are you presenting about?
             </label>
-            <input
+            <textarea
               id="topic-input"
-              type="text"
               className="topic-input"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="Enter your topic..."
               disabled={uiState === 'recording' || uiState === 'processing'}
+              rows={1}
             />
           </section>
         )}
@@ -159,9 +159,6 @@ function App() {
               <span className="record-icon" />
               <span>Start Recording</span>
             </button>
-            {mode === 'qa' && (
-              <p className="hint">Click to begin. Aim for 30 seconds to 2 minutes.</p>
-            )}
           </div>
         )}
 
