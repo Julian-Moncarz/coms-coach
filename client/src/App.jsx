@@ -29,6 +29,38 @@ function App() {
     }
   }
 
+  const getTranscript = async (audioBlob) => {
+    const formData = new FormData()
+    formData.append('audio', audioBlob)
+
+    const response = await fetch('/api/transcribe', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      throw new Error(`Transcription failed: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.transcript.text
+  }
+
+  const analyzeTranscript = async (transcript, question) => {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transcript, originalQuestion: question })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Analysis failed: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.feedback
+  }
+
   const handleStopRecording = async () => {
     const audioBlob = await stopRecording()
     if (!audioBlob) return
@@ -36,35 +68,15 @@ function App() {
     setUiState('processing')
 
     try {
-      const formData = new FormData()
-      // Determine file extension from blob type
-      const ext = audioBlob.type.includes('mp4') ? 'm4a' : 'webm'
-      formData.append('audio', audioBlob, `recording.${ext}`)
-      // Send question (Q&A mode) or topic (presentation mode)
       const prompt = mode === 'qa'
         ? currentQuestion.text
         : (topic.trim() || 'freeform presentation practice')
-      formData.append('question', prompt)
 
-      const response = await fetch('/api/', {
-        method: 'POST',
-        body: formData
-      })
+      const transcript = await getTranscript(audioBlob)
+      const feedback = await analyzeTranscript(transcript, prompt)
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      if (data.feedback) {
-        setFeedback(data.feedback)
-        setUiState('feedback')
-      } else {
-        // Server doesn't return feedback yet - show placeholder
-        setFeedback('_Your recording was uploaded successfully. Feedback will appear here once transcription is connected._')
-        setUiState('feedback')
-      }
+      setFeedback(feedback)
+      setUiState('feedback')
     } catch (err) {
       setSubmitError('Failed to submit recording. Is the server running?')
       setUiState('idle')
