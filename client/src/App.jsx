@@ -4,9 +4,12 @@ import { useRecorder } from './useRecorder'
 import './App.css'
 
 // UI States: idle | recording | processing | feedback
+// Modes: qa | presentation
 function App() {
+  const [mode, setMode] = useState('qa')
   const [uiState, setUiState] = useState('idle')
   const [currentQuestion, setCurrentQuestion] = useState(() => getRandomQuestion())
+  const [topic, setTopic] = useState('')
   const [feedback, setFeedback] = useState(null)
   const [submitError, setSubmitError] = useState(null)
 
@@ -38,12 +41,20 @@ function App() {
       // Determine file extension from blob type
       const ext = audioBlob.type.includes('mp4') ? 'm4a' : 'webm'
       formData.append('audio', audioBlob, `recording.${ext}`)
-      formData.append('question', currentQuestion.text)
+      // Send question (Q&A mode) or topic (presentation mode)
+      const prompt = mode === 'qa'
+        ? currentQuestion.text
+        : (topic.trim() || 'freeform presentation practice')
+      formData.append('question', prompt)
 
       const response = await fetch('/api/', {
         method: 'POST',
         body: formData
       })
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`)
+      }
 
       const data = await response.json()
 
@@ -56,7 +67,7 @@ function App() {
         setUiState('feedback')
       }
     } catch (err) {
-      setSubmitError('Failed to submit recording. Please try again.')
+      setSubmitError('Failed to submit recording. Is the server running?')
       setUiState('idle')
       console.error('Upload error:', err)
     }
@@ -75,6 +86,21 @@ function App() {
     setUiState('idle')
   }
 
+  const handleModeChange = (newMode) => {
+    if (newMode === mode) return
+    setMode(newMode)
+    setUiState('idle')
+    setFeedback(null)
+    setSubmitError(null)
+    clearError()
+  }
+
+  const handleStartPresentationAgain = () => {
+    setFeedback(null)
+    setSubmitError(null)
+    setUiState('idle')
+  }
+
   const error = recorderError || submitError
 
   return (
@@ -84,11 +110,43 @@ function App() {
         <h1 className="title">Comms Coach</h1>
       </header>
 
+      <nav className="mode-toggle">
+        <button
+          className={`mode-tab ${mode === 'qa' ? 'active' : ''}`}
+          onClick={() => handleModeChange('qa')}
+        >
+          Q&A Practice
+        </button>
+        <button
+          className={`mode-tab ${mode === 'presentation' ? 'active' : ''}`}
+          onClick={() => handleModeChange('presentation')}
+        >
+          Presentation Practice
+        </button>
+      </nav>
+
       <main className="main">
-        {uiState !== 'feedback' && (
+        {mode === 'qa' && uiState !== 'feedback' && (
           <section className="question-section">
             <span className="question-label">Your prompt</span>
             <h2 className="question-text">{currentQuestion.text}</h2>
+          </section>
+        )}
+
+        {mode === 'presentation' && (
+          <section className="topic-section">
+            <label className="topic-label" htmlFor="topic-input">
+              What are you presenting about?
+            </label>
+            <input
+              id="topic-input"
+              type="text"
+              className="topic-input"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="Enter your topic..."
+              disabled={uiState === 'recording' || uiState === 'processing'}
+            />
           </section>
         )}
 
@@ -101,7 +159,9 @@ function App() {
               <span className="record-icon" />
               <span>Start Recording</span>
             </button>
-            <p className="hint">Click to begin. Aim for 30 seconds to 2 minutes.</p>
+            {mode === 'qa' && (
+              <p className="hint">Click to begin. Aim for 30 seconds to 2 minutes.</p>
+            )}
           </div>
         )}
 
@@ -132,19 +192,29 @@ function App() {
           <div className="feedback-section">
             <div className="feedback-header">
               <span className="feedback-label">Feedback</span>
-              <p className="feedback-question">"{currentQuestion.text}"</p>
+              <p className="feedback-question">
+                "{mode === 'qa' ? currentQuestion.text : (topic.trim() || 'freeform presentation practice')}"
+              </p>
             </div>
             <div
               className="feedback-content"
               dangerouslySetInnerHTML={{ __html: formatMarkdown(feedback) }}
             />
             <div className="feedback-actions">
-              <button className="action-button secondary" onClick={handleTryAgain}>
-                Try Again
-              </button>
-              <button className="action-button primary" onClick={handleNewQuestion}>
-                New Question
-              </button>
+              {mode === 'qa' ? (
+                <>
+                  <button className="action-button secondary" onClick={handleTryAgain}>
+                    Try Again
+                  </button>
+                  <button className="action-button primary" onClick={handleNewQuestion}>
+                    New Question
+                  </button>
+                </>
+              ) : (
+                <button className="action-button primary" onClick={handleStartPresentationAgain}>
+                  Start Presentation Again
+                </button>
+              )}
             </div>
           </div>
         )}

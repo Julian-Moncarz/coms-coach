@@ -48,6 +48,44 @@
 }
 
 /* ================================
+   Mode Toggle
+   ================================ */
+
+.mode-toggle {
+  display: flex;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xl);
+  padding: 4px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  animation: fadeSlideDown 0.6s ease-out 0.05s both;
+}
+
+.mode-tab {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-tab:hover:not(.active) {
+  color: var(--text-secondary);
+}
+
+.mode-tab.active {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ================================
    Main Content
    ================================ */
 
@@ -83,6 +121,54 @@
   line-height: 1.3;
   color: var(--text-primary);
   margin: 0;
+}
+
+/* ================================
+   Topic Section (Presentation Mode)
+   ================================ */
+
+.topic-section {
+  margin-bottom: var(--space-xl);
+  animation: fadeSlideUp 0.7s ease-out 0.1s both;
+}
+
+.topic-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.topic-input {
+  width: 100%;
+  padding: var(--space-md) var(--space-md);
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--bg-elevated);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.topic-input::placeholder {
+  color: var(--text-muted);
+}
+
+.topic-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-elevated);
+}
+
+.topic-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ================================
