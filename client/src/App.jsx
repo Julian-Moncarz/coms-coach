@@ -108,22 +108,22 @@ function App() {
       <header className="header">
         <span className="logo-mark">CC</span>
         <h1 className="title">Comms Coach</h1>
+        <nav className="mode-toggle">
+          <button
+            className={`mode-link ${mode === 'qa' ? 'active' : ''}`}
+            onClick={() => handleModeChange('qa')}
+          >
+            Q&A
+          </button>
+          <span className="mode-separator">·</span>
+          <button
+            className={`mode-link ${mode === 'presentation' ? 'active' : ''}`}
+            onClick={() => handleModeChange('presentation')}
+          >
+            Presentation
+          </button>
+        </nav>
       </header>
-
-      <nav className="mode-toggle">
-        <button
-          className={`mode-tab ${mode === 'qa' ? 'active' : ''}`}
-          onClick={() => handleModeChange('qa')}
-        >
-          Q&A Practice
-        </button>
-        <button
-          className={`mode-tab ${mode === 'presentation' ? 'active' : ''}`}
-          onClick={() => handleModeChange('presentation')}
-        >
-          Presentation Practice
-        </button>
-      </nav>
 
       <main className="main">
         {mode === 'qa' && uiState !== 'feedback' && (
