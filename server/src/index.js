@@ -42,15 +42,15 @@ async function getTranscript(file) {
     }
 
     const formData = new FormData()
-    formData.append('model', 'whisper-large-v3-turbo')
+    formData.append('model', process.env.TRANSCRIPT_MODEL)
     formData.append('file', new Blob([fs.readFileSync(file.path)], { type: file.mimetype }), `audio.${ext}`)
     formData.append('temperature', '0')
     formData.append('response_format', 'verbose_json')
 
-    const response = await fetch(`${process.env.GROQ_API_URL}/audio/transcriptions`, {
+    const response = await fetch(`${process.env.TRANSCRIPT_API_URL}`, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+            'Authorization': `Bearer ${process.env.TRANSCRIPT_API_KEY}`
         },
         body: formData
     })
