@@ -1,4 +1,3 @@
-const OpenAI = require('openai')
 const fs = require('fs')
 const path = require('path')
 
@@ -8,20 +7,29 @@ const SYSTEM_PROMPT = fs.readFileSync(
 )
 
 async function analyzeTranscript(transcript, originalQuestion) {
-    const client = new OpenAI()
-
-    const systemPrompt = SYSTEM_PROMPT.replace('{originalQuestion}', originalQuestion)
-
-    const response = await client.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: transcript }
-        ],
-        temperature: 0.3
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [
+                { role: 'system', content: SYSTEM_PROMPT.replace('{originalQuestion}', originalQuestion) },
+                { role: 'user', content: transcript }
+            ],
+            temperature: 0.3
+        })
     })
 
-    return response.choices[0].message.content
+    if (!response.ok) {
+        const error = await response.json()
+        console.error(`OpenAI API error ${response.status} - ${JSON.stringify(error)}`)
+        throw new Error('OpenAI API error')
+    }
+
+    return (await response.json()).choices[0].message.content
 }
 
 module.exports = { analyzeTranscript }
