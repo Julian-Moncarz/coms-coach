@@ -2,6 +2,12 @@
 
 A communication coaching tool that provides AI-powered feedback on your spoken responses.
 
+
+
+https://github.com/user-attachments/assets/2246e2f5-4aee-48fe-b860-52bccb94c0f9
+
+
+
 ## How It Works
 
 1. You talk
