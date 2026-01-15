@@ -24,35 +24,6 @@ https://github.com/user-attachments/assets/2246e2f5-4aee-48fe-b860-52bccb94c0f9
 6. LLM returns feedback as a string
 7. Feedback is rendered as markdown and displayed to the user
 
-```mermaid
-flowchart TD
-    A[User opens website] --> B[Presented with question/prompt]
-    B --> C[User records response]
-    C --> D[Upload audio file]
-    D --> E[Transcription API]
-    E --> F[Transcript text]
-    F --> G[LLM Analysis]
-    G --> H[Feedback string]
-    H --> I[Render as Markdown]
-    I --> J[Display feedback to user]
-
-    subgraph Frontend
-        A
-        B
-        C
-        D
-        I
-        J
-    end
-
-    subgraph Backend
-        E
-        F
-        G
-        H
-    end
-```
-
 ## Communication Principles
 
 The LLM evaluates responses against these criteria:
