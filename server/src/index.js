@@ -13,10 +13,35 @@ if (!fs.existsSync('uploads')) {
     fs.mkdirSync('uploads')
 }
 
+class ApiError extends Error {
+    constructor(message, status) {
+        super(message)
+        this.status = status
+    }
+}
+
+const ALLOWED_AUDIO_TYPES = {
+    'audio/flac': 'flac',
+    'audio/mp3': 'mp3',
+    'audio/mpeg': 'mp3',
+    'audio/mp4': 'mp4',
+    'audio/m4a': 'm4a',
+    'audio/x-m4a': 'm4a',
+    'audio/ogg': 'ogg',
+    'audio/wav': 'wav',
+    'audio/x-wav': 'wav',
+    'audio/webm': 'webm'
+}
+
 async function getTranscript(file) {
+    const ext = ALLOWED_AUDIO_TYPES[file.mimetype]
+    if (!ext) {
+        throw new ApiError(`Unsupported audio format: ${file.mimetype}. Allowed: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, webm`, 400)
+    }
+
     const formData = new FormData()
     formData.append('model', 'whisper-large-v3-turbo')
-    formData.append('file', new Blob([fs.readFileSync(file.path)], { type: file.mimetype }), file.originalname)
+    formData.append('file', new Blob([fs.readFileSync(file.path)], { type: file.mimetype }), `audio.${ext}`)
     formData.append('temperature', '0')
     formData.append('response_format', 'verbose_json')
 
@@ -27,6 +52,12 @@ async function getTranscript(file) {
         },
         body: formData
     })
+
+    if (!response.ok) {
+        const error = await response.json()
+        console.error(`Groq API error ${response.status} - ${JSON.stringify(error)}`)
+        throw new ApiError('Groq API error', 500)
+    }
 
     return response.json()
 }
@@ -40,15 +71,19 @@ app.post('/', upload.single('audio'), async (req, res) => {
         return res.status(400).json({ error: 'No audio file uploaded' })
     }
 
-    const transcript = await getTranscript(req.file)
+    try {
+        const transcript = await getTranscript(req.file)
 
-    res.json({ 
-        success: true,
-        id: req.file.filename,
-        originalName: req.file.originalname,
-        size: req.file.size,
-        transcript
-    })
+        res.json({ 
+            success: true,
+            id: req.file.filename,
+            originalName: req.file.originalname,
+            size: req.file.size,
+            transcript
+        })
+    } catch (error) {
+        res.status(error.status || 500).json({ error: error.message })
+    }
 })
 
 app.listen(port, () => {
