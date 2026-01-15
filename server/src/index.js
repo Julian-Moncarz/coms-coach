@@ -15,13 +15,6 @@ if (!fs.existsSync('uploads')) {
     fs.mkdirSync('uploads')
 }
 
-class ApiError extends Error {
-    constructor(message, status) {
-        super(message)
-        this.status = status
-    }
-}
-
 const ALLOWED_AUDIO_TYPES = {
     'audio/flac': 'flac',
     'audio/mp3': 'mp3',
@@ -35,15 +28,23 @@ const ALLOWED_AUDIO_TYPES = {
     'audio/webm': 'webm'
 }
 
-async function getTranscript(file) {
-    const ext = ALLOWED_AUDIO_TYPES[file.mimetype]
+app.get('/', (req, res) => {
+
+})
+
+app.post('/transcribe', upload.single('audio'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No audio file uploaded' })
+    }
+
+    const ext = ALLOWED_AUDIO_TYPES[req.file.mimetype]
     if (!ext) {
-        throw new ApiError(`Unsupported audio format: ${file.mimetype}. Allowed: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, webm`, 400)
+        return res.status(400).json({ error: `Unsupported audio format: ${req.file.mimetype}. Allowed: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, webm` })
     }
 
     const formData = new FormData()
     formData.append('model', process.env.TRANSCRIPT_MODEL)
-    formData.append('file', new Blob([fs.readFileSync(file.path)], { type: file.mimetype }), `audio.${ext}`)
+    formData.append('file', new Blob([fs.readFileSync(req.file.path)], { type: req.file.mimetype }), `audio.${ext}`)
     formData.append('temperature', '0')
     formData.append('response_format', 'verbose_json')
 
@@ -57,35 +58,19 @@ async function getTranscript(file) {
 
     if (!response.ok) {
         const error = await response.json()
-        console.error(`Groq API error ${response.status} - ${JSON.stringify(error)}`)
-        throw new ApiError('Groq API error', 500)
+        console.error(`Transcript API error ${response.status} - ${JSON.stringify(error)}`)
+        return res.status(500).json({ error: 'Transcript API error' })
     }
 
-    return response.json()
-}
+    const transcript = await response.json()
 
-app.get('/', (req, res) => {
-
-})
-
-app.post('/', upload.single('audio'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'No audio file uploaded' })
-    }
-
-    try {
-        const transcript = await getTranscript(req.file)
-
-        res.json({
-            success: true,
-            id: req.file.filename,
-            originalName: req.file.originalname,
-            size: req.file.size,
-            transcript
-        })
-    } catch (error) {
-        res.status(error.status || 500).json({ error: error.message })
-    }
+    res.json({
+        success: true,
+        id: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        transcript
+    })
 })
 
 app.post('/analyze', async (req, res) => {
