@@ -11,6 +11,8 @@ function App() {
   const [currentQuestion, setCurrentQuestion] = useState(() => getRandomQuestion())
   const [topic, setTopic] = useState('')
   const [feedback, setFeedback] = useState(null)
+  const [transcript, setTranscript] = useState(null)
+  const [transcriptOpen, setTranscriptOpen] = useState(false)
   const [submitError, setSubmitError] = useState(null)
 
   const {
@@ -73,10 +75,12 @@ function App() {
         ? currentQuestion.text
         : (topic.trim() || 'freeform presentation practice')
 
-      const transcript = await getTranscript(audioBlob)
-      const feedback = await analyzeTranscript(transcript, prompt)
+      const transcriptText = await getTranscript(audioBlob)
+      const feedbackText = await analyzeTranscript(transcriptText, prompt)
 
-      setFeedback(feedback)
+      setTranscript(transcriptText)
+      setFeedback(feedbackText)
+      setTranscriptOpen(false)
       setUiState('feedback')
     } catch (err) {
       setSubmitError('Failed to submit recording. Is the server running?')
@@ -87,6 +91,8 @@ function App() {
 
   const handleTryAgain = () => {
     setFeedback(null)
+    setTranscript(null)
+    setTranscriptOpen(false)
     setSubmitError(null)
     setUiState('idle')
   }
@@ -94,6 +100,8 @@ function App() {
   const handleNewQuestion = () => {
     setCurrentQuestion(getRandomQuestion(currentQuestion.id))
     setFeedback(null)
+    setTranscript(null)
+    setTranscriptOpen(false)
     setSubmitError(null)
     setUiState('idle')
   }
@@ -109,6 +117,8 @@ function App() {
 
   const handleStartPresentationAgain = () => {
     setFeedback(null)
+    setTranscript(null)
+    setTranscriptOpen(false)
     setSubmitError(null)
     setUiState('idle')
   }
@@ -234,6 +244,33 @@ function App() {
                 "{mode === 'qa' ? currentQuestion.text : (topic.trim() || 'freeform presentation practice')}"
               </p>
             </div>
+
+            {/* Transcript Dropdown */}
+            {transcript && (
+              <div className="mb-md">
+                <button
+                  className="flex items-center gap-xs w-full py-sm px-md bg-bg-surface border border-bg-elevated rounded-md cursor-pointer transition-all duration-200 hover:bg-bg-elevated group"
+                  onClick={() => setTranscriptOpen(!transcriptOpen)}
+                  aria-expanded={transcriptOpen}
+                >
+                  <span
+                    className={`text-text-muted transition-transform duration-200 ${transcriptOpen ? 'rotate-90' : ''}`}
+                  >
+                    ▶
+                  </span>
+                  <span className="font-body text-sm font-medium text-text-secondary group-hover:text-text-primary">
+                    View Transcript
+                  </span>
+                </button>
+                {transcriptOpen && (
+                  <div className="mt-sm p-md bg-bg-surface border border-bg-elevated rounded-md animate-fade-in">
+                    <p className="font-body text-sm leading-relaxed text-text-secondary m-0 whitespace-pre-wrap">
+                      {transcript}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Feedback Content */}
             <div
