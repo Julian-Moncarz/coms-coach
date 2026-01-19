@@ -2,6 +2,12 @@
 
 A communication coaching tool that provides AI-powered feedback on your spoken responses.
 
+
+
+https://github.com/user-attachments/assets/2246e2f5-4aee-48fe-b860-52bccb94c0f9
+
+
+
 ## How It Works
 
 1. You talk
@@ -17,35 +23,6 @@ A communication coaching tool that provides AI-powered feedback on your spoken r
 5. Transcript is passed to an LLM for analysis
 6. LLM returns feedback as a string
 7. Feedback is rendered as markdown and displayed to the user
-
-```mermaid
-flowchart TD
-    A[User opens website] --> B[Presented with question/prompt]
-    B --> C[User records response]
-    C --> D[Upload audio file]
-    D --> E[Transcription API]
-    E --> F[Transcript text]
-    F --> G[LLM Analysis]
-    G --> H[Feedback string]
-    H --> I[Render as Markdown]
-    I --> J[Display feedback to user]
-
-    subgraph Frontend
-        A
-        B
-        C
-        D
-        I
-        J
-    end
-
-    subgraph Backend
-        E
-        F
-        G
-        H
-    end
-```
 
 ## Communication Principles
 
@@ -84,4 +61,33 @@ The LLM evaluates responses against these criteria:
 20. Does pitch and volume vary, or is delivery flat?
 21. Are pauses used strategically for emphasis?
 22. Do statements end cleanly (no upspeak or trailing off)?
-   
+
+
+## Key Success Metric: Increase in Speaking Ability per Unit Time
+- Core metric: Speaking ability improvement rate (increase in speaking ability per unit time)
+- Purpose: Primary number to optimize; all implementation choices judged by whether they increase this metric
+
+Metric Construction Idea
+- Inputs:
+  - Input question (prompt given to user)
+  - Audio file of user response
+- Output:
+  - Score representing speaking ability (numeric measurement)
+- Required: Define how score quantifies speaking ability
+
+Implementation Plan
+- Collect data:
+  - Recruit a cohort of users
+  - Have users use the app and respond to input questions with audio
+- Measure:
+  - Compute speaking ability score for each response
+  - Track score changes over time for each user
+- Optimization objective:
+  - Optimize app features/interventions to maximize score increase per unit time (time efficiency)
+
+Constraints / Principles
+- Cost-sensitive: Seek a cheap/low-cost measurement method
+- Focus: Treat other details as implementation choices determined by their effect on the core metric
+
+This could include anything from live tuning of the prompt through a system like DSPy to manual iteration or whatever it is, but like that's our loss function and that's the gradient which we follow. We're going to build the state-of-the-art most efficient training system for increasing people's speaking ability in the shortest amount of time. Or at least get as close as we can to that.
+
