@@ -1,4 +1,4 @@
-import { useState } from 'react'
+ import { useState, useEffect, useRef } from 'react'
 import Markdown from 'react-markdown'
 import { getRandomQuestion } from './questions'
 import { useRecorder } from './useRecorder'
@@ -14,6 +14,17 @@ function App() {
   const [transcript, setTranscript] = useState(null)
   const [transcriptOpen, setTranscriptOpen] = useState(false)
   const [submitError, setSubmitError] = useState(null)
+  const [audioUrl, setAudioUrl] = useState(null)
+  const audioRef = useRef(null)
+
+  // Clean up audio URL when it changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl)
+      }
+    }
+  }, [audioUrl])
 
   const {
     formattedTime,
@@ -68,6 +79,13 @@ function App() {
     const audioBlob = await stopRecording()
     if (!audioBlob) return
 
+    // Create audio URL for playback
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl)
+    }
+    const newAudioUrl = URL.createObjectURL(audioBlob)
+    setAudioUrl(newAudioUrl)
+
     setUiState('processing')
 
     try {
@@ -94,6 +112,10 @@ function App() {
     setTranscript(null)
     setTranscriptOpen(false)
     setSubmitError(null)
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl)
+      setAudioUrl(null)
+    }
     setUiState('idle')
   }
 
@@ -103,6 +125,10 @@ function App() {
     setTranscript(null)
     setTranscriptOpen(false)
     setSubmitError(null)
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl)
+      setAudioUrl(null)
+    }
     setUiState('idle')
   }
 
@@ -112,6 +138,10 @@ function App() {
     setUiState('idle')
     setFeedback(null)
     setSubmitError(null)
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl)
+      setAudioUrl(null)
+    }
     clearError()
   }
 
@@ -120,6 +150,10 @@ function App() {
     setTranscript(null)
     setTranscriptOpen(false)
     setSubmitError(null)
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl)
+      setAudioUrl(null)
+    }
     setUiState('idle')
   }
 
@@ -244,6 +278,22 @@ function App() {
                 "{mode === 'qa' ? currentQuestion.text : (topic.trim() || 'freeform presentation practice')}"
               </p>
             </div>
+
+            {/* Audio Player */}
+            {audioUrl && (
+              <div className="mb-md p-md bg-bg-surface border border-bg-elevated rounded-md">
+                <span className="block text-xs font-medium tracking-[0.1em] uppercase text-text-muted mb-sm">
+                  Your Recording
+                </span>
+                <audio
+                  ref={audioRef}
+                  src={audioUrl}
+                  controls
+                  className="w-full h-10"
+                  preload="metadata"
+                />
+              </div>
+            )}
 
             {/* Transcript Dropdown */}
             {transcript && (
